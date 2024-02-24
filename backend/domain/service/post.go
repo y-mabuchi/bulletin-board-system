@@ -4,6 +4,6 @@ import (
 	"github.com/y-mabuchi/bulletin-board-system/backend/domain/model"
 )
 
-type UserService interface {
-	Exist(userID model.UserID) bool
+type PostService interface {
+	Exist(postID model.PostID) bool
 }

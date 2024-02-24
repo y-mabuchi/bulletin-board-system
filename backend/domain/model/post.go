@@ -25,10 +25,6 @@ func NewPost(
 		return nil, err
 	}
 
-	// TODO: exist checks
-	// - thread
-	// - post(if quoted post id is not nil)
-
 	timestamp := time.Now()
 
 	return &Post{

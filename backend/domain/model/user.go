@@ -1,46 +1,100 @@
 package model
 
 import (
-	"fmt"
-	"net/mail"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        uuid.UUID
-	Name      string
-	Password  string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID                UserID
+	Name                  UserName
+	Email                 EmailAddress
+	Password              UserPassword
+	RegistrationTimestamp time.Time
+	LastLoginTimestamp    time.Time
 }
 
 func NewUser(
 	name, password, email string,
 ) (*User, error) {
-	if len(name) > 255 {
-		return nil, fmt.Errorf("name must be less than or equal 255: %s", name)
+	uName, err := NewUserName(name)
+	if err != nil {
+		return nil, err
 	}
 
-	passLen := len(password)
-	if passLen < 8 || passLen > 16 {
-		return nil, fmt.Errorf("password must be between 8 and 16")
+	eAddress, err := NewEmailAddress(email)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, err := mail.ParseAddress(email); err != nil {
-		return nil, fmt.Errorf("failed to parse email: %s, %v", email, err)
+	uPass, err := NewUserPassword(password)
+	if err != nil {
+		return nil, err
 	}
 
 	timestamp := time.Now()
 
 	return &User{
-		ID:        uuid.New(),
-		Name:      name,
-		Password:  password,
-		Email:     email,
-		CreatedAt: timestamp,
-		UpdatedAt: timestamp,
+		UserID:                NewUserID(),
+		Name:                  uName,
+		Email:                 eAddress,
+		Password:              uPass,
+		RegistrationTimestamp: timestamp,
+		LastLoginTimestamp:    timestamp,
+	}, nil
+}
+
+func (u *User) ChangeName(name string) (*User, error) {
+	uName, err := NewUserName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	timestamp := time.Now()
+
+	return &User{
+		UserID:                u.UserID,
+		Name:                  uName,
+		Email:                 u.Email,
+		Password:              u.Password,
+		RegistrationTimestamp: u.RegistrationTimestamp,
+		LastLoginTimestamp:    timestamp,
+	}, nil
+}
+
+func (u *User) ChangeEmail(email string) (*User, error) {
+	eAddress, err := NewEmailAddress(email)
+	if err != nil {
+		return nil, err
+	}
+
+	timestamp := time.Now()
+
+	return &User{
+		UserID:                u.UserID,
+		Name:                  u.Name,
+		Email:                 eAddress,
+		Password:              u.Password,
+		RegistrationTimestamp: u.RegistrationTimestamp,
+		LastLoginTimestamp:    timestamp,
+	}, nil
+}
+
+func (u *User) ChangePassword(password string) (*User, error) {
+	// TODO: compare old and new password
+
+	uPass, err := NewUserPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	timestamp := time.Now()
+
+	return &User{
+		UserID:                u.UserID,
+		Name:                  u.Name,
+		Email:                 u.Email,
+		Password:              uPass,
+		RegistrationTimestamp: u.RegistrationTimestamp,
+		LastLoginTimestamp:    timestamp,
 	}, nil
 }

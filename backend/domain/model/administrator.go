@@ -1,47 +1,94 @@
 package model
 
 import (
-	"fmt"
-	"net/mail"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Administrator struct {
-	ID        uuid.UUID
-	Name      string
-	Password  string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	AdministratorID       UserID
+	Name                  UserName
+	Email                 EmailAddress
+	Password              UserPassword
+	RegistrationTimestamp time.Time
+	LastLoginTimestamp    time.Time
 }
 
 func NewAdministrator(
 	name, password, email string,
 ) (*Administrator, error) {
-	// validation
-	if len(name) > 255 {
-		return nil, fmt.Errorf("name must be less than or equal 255: %s", name)
+	uName, err := NewUserName(name)
+	if err != nil {
+		return nil, err
 	}
 
-	passLen := len(password)
-	if passLen < 8 || passLen > 16 {
-		return nil, fmt.Errorf("password must be between 8 and 16")
+	eAddress, err := NewEmailAddress(email)
+	if err != nil {
+		return nil, err
 	}
 
-	if _, err := mail.ParseAddress(email); err != nil {
-		return nil, fmt.Errorf("failed to parse email: %s, %v", email, err)
+	uPass, err := NewUserPassword(password)
+	if err != nil {
+		return nil, err
 	}
 
 	timestamp := time.Now()
 
 	return &Administrator{
-		ID:        uuid.New(),
-		Name:      name,
-		Password:  password,
-		Email:     email,
-		CreatedAt: timestamp,
-		UpdatedAt: timestamp,
+		AdministratorID:       NewUserID(),
+		Name:                  uName,
+		Email:                 eAddress,
+		Password:              uPass,
+		RegistrationTimestamp: timestamp,
+		LastLoginTimestamp:    timestamp,
+	}, nil
+}
+
+func (a *Administrator) ChangeName(name string) (*Administrator, error) {
+	uName, err := NewUserName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Administrator{
+		AdministratorID:       a.AdministratorID,
+		Name:                  uName,
+		Email:                 a.Email,
+		Password:              a.Password,
+		RegistrationTimestamp: a.RegistrationTimestamp,
+		LastLoginTimestamp:    a.LastLoginTimestamp,
+	}, nil
+}
+
+func (a *Administrator) ChangeEmail(email string) (*Administrator, error) {
+	eAddress, err := NewEmailAddress(email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Administrator{
+		AdministratorID:       a.AdministratorID,
+		Name:                  a.Name,
+		Email:                 eAddress,
+		Password:              a.Password,
+		RegistrationTimestamp: a.RegistrationTimestamp,
+		LastLoginTimestamp:    time.Time{},
+	}, nil
+}
+
+func (a *Administrator) ChangePassword(password string) (*Administrator, error) {
+	uPass, err := NewUserPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: compare old and new password
+
+	return &Administrator{
+		AdministratorID:       a.AdministratorID,
+		Name:                  a.Name,
+		Email:                 a.Email,
+		Password:              uPass,
+		RegistrationTimestamp: a.RegistrationTimestamp,
+		LastLoginTimestamp:    a.LastLoginTimestamp,
 	}, nil
 }
